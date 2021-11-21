@@ -1,0 +1,10 @@
+header {
+    background: rgb(106, 181, 231);
+    color: cornsilk;
+    font-size: 5 rem;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
