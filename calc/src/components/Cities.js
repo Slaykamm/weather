@@ -14,7 +14,6 @@ function Cities() {
 
     let [pickCity, addNewCity] = useState("");
     let [pickInterval, addTimeInterval] = useState();
-     
 
 
 

@@ -54,7 +54,7 @@ function WeatherDispatch(props) {
 
     
     var newData = JSON.parse(JSON.stringify(MyJson));
-    const api_key = 'fe903318251d78a79595ce267861e3b5'
+    const api_key = '16da20756bc63384418e1c8dc93e50a6'
     let [receivedInfo, setReceivedInfo] = useState([0])
     let [interval, setInterval] = useState(0)
  
@@ -88,10 +88,10 @@ function WeatherDispatch(props) {
                                 {
                                     axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&exclude=minutely,hourly&appid=${api_key}`).then(responce =>{
                                 
-                                
+                                    
                                         let receivedInfo2 = responce.data;
                                         let receivedInfo = responce.data.daily;
-                                    //    console.log("RECEIVED DATA", receivedInfo2)
+                                        console.log("RECEIVED DATA DAILY", receivedInfo2)
 
                                         //каррент
 
