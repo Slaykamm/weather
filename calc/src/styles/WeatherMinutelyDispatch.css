@@ -1,10 +1,11 @@
 #weather_dispatch {
     display: flex;
     width: 100%;
-    height: 200%;
+    height: 15%;
     background-color: white;
     padding: 5%;
 }
+
 
 p {
     display: flex;
@@ -15,3 +16,15 @@ p {
 }
 
 
+#weather_dispatch th{
+    padding-top: 3%;
+}
+
+
+#weather_dispatch_minutes {
+    display: flex;
+    width: 100%;
+    height: 15%;
+    background-color: white;
+    padding: 5%;
+}

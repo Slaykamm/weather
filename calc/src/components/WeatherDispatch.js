@@ -1,14 +1,21 @@
-import React from "react";
+import React, {useState} from "react";
 import axios from "axios";
+import Table from 'react-bootstrap/Table';
 
 
 //import MyJson from '../resource/current.city.list.min.json';
 import MyJson from '../resource/city2.json';
+import WeatherDailyDispatch from "./WeatherDailyDispatch";
+import WeatherHourlyDispatch from "./WeatherHourlyDispatch";
+import WeatherMinutelyDispatch from "./WeatherMinutelyDispatch";
+
+
+
 
 import "../styles/WeatherDispatch.css"
 
 
-function getCovertedTime(oldTime)
+function getCovertedTime(oldTime, period)
 {
     var a = new Date(oldTime * 1000);
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -20,22 +27,51 @@ function getCovertedTime(oldTime)
     var sec ="0" + a.getSeconds();
     var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
 
+
+    if (period == 'dayly'){
+        var time = date + ' ' + month + ' ' + year  ; 
+    }
+
+    if (period == 'hour'){
+        var time = date + ' ' + month + ' ' + year + ' ' + hour  ; 
+    }
+
+    if (period == 'minute'){
+        var time = hour + ':' + min + ':' + sec ; 
+    }
+
+    if (period == 'current'){
+        var time = date + ' ' + month + ' ' + year + " " + hour + ':' + min; 
+    }
+
     return time
 }
 
 
+
 function WeatherDispatch(props) {
 
-    var checkCityInfo = {};
+
+    
     var newData = JSON.parse(JSON.stringify(MyJson));
-        
+    const api_key = 'fe903318251d78a79595ce267861e3b5'
+    let [receivedInfo, setReceivedInfo] = useState([0])
+    let [interval, setInterval] = useState(0)
+ 
+
+    if (interval != props.interval){
+       // 
+
+        setInterval(props.interval);
+        setReceivedInfo([0]);
+
+    }
+
         newData.map(city =>
             {
 
-
                 if (city.name == props.cityName)
                     {
-
                       const checkCityInfo =
                         {
                             name : city.name,
@@ -43,76 +79,104 @@ function WeatherDispatch(props) {
                             lon : city.coord.lon,
                             lat : city.coord.lat
 
-
                         }
 
-                        console.log('test', checkCityInfo)
+                            if  (receivedInfo == 0) 
+                            {
 
-                        
-
-                            const api_key = 'fe903318251d78a79595ce267861e3b5'
-                            //axios.post(`http://api.openweathermap.org/data/2.5/weather?q=${props.cityName}&appid=${api_key}&uits=metric`).then(responce =>{
-                            // axios.post('http://api.openweathermap.org/data/2.5/weather?q=Taglag&appid=fe903318251d78a79595ce267861e3b5').then(responce =>{
-                        
-                            //hourly
-          //                  axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&appid=${api_key}`).then(responce =>{
-                            //1 hour minutely
-                            axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&appid=${api_key}`).then(responce =>{
-                        
-                        
-                                let receivedInfo = responce.data;
-
-                                //каррент
-                                receivedInfo.current.dt = getCovertedTime(receivedInfo.current.dt);
-                                receivedInfo.current.sunrise = getCovertedTime(receivedInfo.current.sunrise);
-                                receivedInfo.current.sunset = getCovertedTime(receivedInfo.current.sunset);
-
-
-                                //дейли
-                                for (let i=0; i<receivedInfo.daily.length; i++)
+                                if (interval == 3)
                                 {
-                                    let oldTime = receivedInfo.daily[i].dt;
-                                    receivedInfo.daily[i].dt = getCovertedTime(oldTime);
+                                    axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&exclude=minutely,hourly&appid=${api_key}`).then(responce =>{
+                                
+                                
+                                        let receivedInfo2 = responce.data;
+                                        let receivedInfo = responce.data.daily;
+                                    //    console.log("RECEIVED DATA", receivedInfo2)
+
+                                        //каррент
+
+                                        
+
+                                        //дейли
+
+                                        for (let i=0; i<receivedInfo2.daily.length; i++)
+                                        {
+                                            let oldTime = receivedInfo2.daily[i].dt;
+                                            receivedInfo2.daily[i].dt = getCovertedTime(oldTime, 'dayly');
+
+                                        }
+                                        let testObject = receivedInfo2.daily;
+                                        
+                                        setReceivedInfo(testObject);
+                                    //    console.log("DAILY", receivedInfo);
+                                        
+                                    })
+
                                 }
 
-
-                                //часы
-                                for (let i=0; i<receivedInfo.hourly.length; i++)
+                                if (interval == 2)
                                 {
+                                    axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&exclude=daily,minutely&appid=${api_key}`).then(responce =>{
+                                
+                                
+                                        let receivedInfo = responce.data;
+                                      //  let receivedInfo = responce.data.hourly;
+                                     //   console.log("RECEIVED DATA", receivedInfo)
+
+                                        //часы
+
+                                        for (let i=0; i<receivedInfo.hourly.length; i++)
+                                        {
+                                            
+                                            let oldTime = receivedInfo.hourly[i].dt;
+                                            receivedInfo.hourly[i].dt = getCovertedTime(oldTime, 'hourly');
+                                        
+                                        }
+                                        setReceivedInfo(receivedInfo.hourly);
+                                      //  console.log("HOUR")
+
                                     
-                                    let oldTime = receivedInfo.hourly[i].dt;
-                                    receivedInfo.hourly[i].dt = getCovertedTime(oldTime);
+                                    })
                                 }
 
-                                console.log(receivedInfo)
-
-                                for (let i=0; i<receivedInfo.minutely.length; i++)
+                                if (interval == 1)
                                 {
-                                    let oldTime = receivedInfo.minutely[i].dt;
-                                    receivedInfo.minutely[i].dt = getCovertedTime(oldTime);
+                                    axios.post(`https://api.openweathermap.org/data/2.5/onecall?lat=${checkCityInfo.lat}&lon=${checkCityInfo.lon}&units=metric&exclude=daily,hourly&appid=${api_key}`).then(responce =>{
+
+                                        let receivedInfo = responce.data;
+                                     //   console.log("RECEIVED DATA", receivedInfo)
+
+                                        //минуты
+
+
+                                        for (let i=0; i<receivedInfo.minutely.length; i++)
+                                        {
+                                            let oldTime = receivedInfo.minutely[i].dt;
+                                            receivedInfo.minutely[i].dt = getCovertedTime(oldTime, 'minutely');
+                                            
+                                        }
+
+                                        receivedInfo.current.dt = getCovertedTime(receivedInfo.current.dt, 'current');
+                                        receivedInfo.current.sunrise = getCovertedTime(receivedInfo.current.sunrise, 'current');
+                                        receivedInfo.current.sunset = getCovertedTime(receivedInfo.current.sunset, 'current');
+                                        
+
+                                        setReceivedInfo(receivedInfo)
+                                     //   console.log("MINUTE", receivedInfo)
+
+                                            
+
+                                    })
                                 }
+                                    
+                                
 
-                                //минуты
-
-
-
+                            } //на if наш город. работаем тут, чтобы не мучать компик.
                                
-                        
-                            })
 
-
-
-                        
-
-
-                    } //на if наш город. работаем тут, чтобы не мучать компик.
+                    }
             }); //на мап json
   
-
-
-    
-
-
 
 
 
@@ -120,8 +184,13 @@ function WeatherDispatch(props) {
     return (
 
         <>
+        { interval == 3 ? <WeatherDailyDispatch dailyInfo = {receivedInfo} />
+        
+        : (interval == 2) ? <WeatherHourlyDispatch hourlyInfo = {receivedInfo}/> 
+        : (interval == 1) ? <WeatherMinutelyDispatch minutelyInfo = {receivedInfo}/> : <p>"waitiong for user pick the interval"</p>}
 
-        <p>Test dispatch</p>
+
+
 
         </>
 
